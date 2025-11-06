@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="screen-orientation" content="portrait">
+    <link rel="icon" href="favicon.ico" media="(prefers-color-scheme: light)">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f4f4f4">
+    <title>Euro/Лев Ресто Калкулатор</title>
+    <meta name="description" content="Изчислете лесно ресто между евро и български левове.">
+    <style>
+        html,body{height:100%;margin:0;padding:0;background:#f4f4f4}
+        .content{font-family:Arial,sans-serif;min-width:100vw;width:100vw;box-sizing:border-box;display:flex;align-items:stretch;justify-content:stretch;padding:2vw}
+        .calculator{background:#fff;padding:2vw 3vw;border-radius:2vw;box-shadow:0 2px 8px #ccc;width:100vw;max-width:480px;min-width:260px;margin:auto;display:flex;flex-direction:column;justify-content:center}
+        .inputs{display:flex;flex-direction:column;gap:2vw;margin-bottom:3vw}
+        .inputs label{font-size:.95em;display:flex;justify-content:flex-end;align-items:center}
+        .inputs input{padding:8px;font-size:1.1em;border:1px solid #bbb;border-radius:5px;text-align:right;margin-left:10px}
+        .calc-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;margin-bottom:2vw}
+        .calc-buttons button{padding:3vw 0;font-size:1.2em;border:none;border-radius:1vw;background:#e0e0e0;cursor:pointer;transition:background .2s;min-width:0;min-height:0}
+        .calc-buttons button.select{background:#b3e5fc}
+        .calc-buttons button.double{grid-column:span 2}
+        .calc-buttons button.double-row{grid-row:span 2}
+        .results{margin-top:2vw;font-size:2em}
+        .selected{outline:2px solid #1976d2}
+        .calc-buttons button.red{background-color:#f44336;color:#fff}
+        .calc-buttons button.light-red{background-color:#9f1b82;color:#fff}
+        .currency-btn{flex:1;padding:8px 0;font-size:1em;border:1px solid #bbb;border-radius:5px;background:#e0e0e0;cursor:pointer;transition:background .2s}
+        .result-row{display:flex;justify-content:space-between;align-items:center;padding:4px}
+        .result-label{font-size:.7em;color:#555;text-align:left}
+        .result-value{min-width:80px;text-align:right;font-weight:700;word-break:break-all}
+        .currency-btn.selected{background:#1976d2;color:#fff;border-color:#1976d2}
+        .eur{background-color:#f3f1b9;color:#000;border-color:#a5a35f;border-radius:4px}
+        .eur>input {background-color:#f8f6e4;}
+        .official-rate{margin-top:1vw;font-size:.8em;color:#aaa;text-align:center;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+        .results {background: #f6f6f6; border: solid 1px #ccc; border-radius: 5px; margin: 1vh 0 2vh; padding: 1vw; }
+        .negative { color: #d00;}
+        @media (max-width:600px){.calculator{max-width:100vw;padding:2vw 1vw;border-radius:0;min-width:0} .inputs label,.currency-btn,.calc-buttons button{font-size:1em} .results{font-size:1.2em} }
+        @media screen and (orientation:landscape){ body::before{content:"Моля, завъртете устройството си в портретен режим.";position:fixed;inset:0;background:#000D;color:#fff;display:flex;justify-content:center;align-items:center;font-size:2em;z-index:9999;text-align:center;border-radius:10px;padding:10%}}
+
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="calculator">
+            <div class="inputs">
+                <label>Сума ЛВ: <input type="text" id="orderLeva" step="0.01" placeholder="ЛВ" readonly></label>
+                <label class="eur">Сума EUR: <input type="text" id="orderEuro" step="0.01" placeholder="EUR" readonly></label>
+                <label id="paid">Платено: <input type="text" id="amountGiven" step="0.01" placeholder="EUR / ЛВ" readonly></label>
+                <div id="currencySelector" style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button type="button" id="levBtn" class="currency-btn selected">ЛВ</button>
+                    <button type="button" id="eurBtn" class="currency-btn ">EUR</button>
+                </div>
+            </div>
+            <div class="results">
+                <div class="result-row eur"><span class="result-label">Ресто (EUR):</span> <span class="result-value" id="changeEuro">0.00</span></div>
+                <div class="result-row"><span class="result-label">Ресто (ЛВ):</span> <span class="result-value" id="changeLeva">0.00</span></div>
+            </div>
+            <div class="calc-buttons">
+                <button data-op="7">7</button>
+                <button data-op="8">8</button>
+                <button data-op="9">9</button>
+                <button data-op="*">*</button>
+                <button data-op="4">4</button>
+                <button data-op="5">5</button>
+                <button data-op="6">6</button>
+                <button data-op="-">-</button>
+                <button data-op="1">1</button>
+                <button data-op="2">2</button>
+                <button data-op="3">3</button>
+                <button data-op="+">+</button>
+                <button data-op="0" class="double">0</button>
+                <button data-op=".">.</button>
+                <button data-op="=" class="double-row">=</button>
+
+                <button data-op="clear" class="red">Изчисти</button>
+                <div></div>
+                <button data-op="del" class="light-red">&#9003;</button>
+            </div> 
+        </div>
+    </div>
+    <div class="official-rate">Официален курс на БНБ: <span id="officialRate">1.95583</span></div>
+    <script>
+        const rate = 1.95583;
+        const orderEuro = document.getElementById('orderEuro');
+        const orderLeva = document.getElementById('orderLeva');
+        const amountGiven = document.getElementById('amountGiven');
+        const changeLeva = document.getElementById('changeLeva');
+        const changeEuro = document.getElementById('changeEuro');
+        let selectedInput = orderLeva;
+        let buffer = '';
+        let lastOp = null;
+        let lastValue = null;
+        let givenCurrency = 'LEV';
+
+        // Input focus logic
+        [orderEuro, orderLeva, amountGiven].forEach(input => {
+            input.addEventListener('focus', () => {
+                selectedInput = input;
+                [orderEuro, orderLeva, amountGiven].forEach(i => i.classList.remove('selected'));
+                input.classList.add('selected');
+            });
+        });
+        orderLeva.classList.add('selected');
+
+        // Euro <-> Leva conversion
+        orderEuro.addEventListener('input', () => {
+            console.log(parseFloat(orderEuro.value));
+            if (orderEuro.value && orderEuro.value == (parseFloat(orderEuro.value))) {
+                orderLeva.value = (parseFloat(orderEuro.value) * rate).toFixed(2);
+            } else {
+                orderLeva.value = '';
+            }
+            calculateChange();
+        });
+        orderLeva.addEventListener('input', () => {
+            if (orderLeva.value && orderLeva.value == (parseFloat(orderLeva.value))) {
+                orderEuro.value = (parseFloat(orderLeva.value) / rate).toFixed(2);
+            } else {
+                orderEuro.value = '';
+            }
+            calculateChange();
+        });
+        amountGiven.addEventListener('input', calculateChange);
+
+        document.getElementById('eurBtn').addEventListener('click', function() {
+            givenCurrency = 'EUR';
+            this.classList.add('selected');
+            document.getElementById('paid').classList.add('eur');
+            document.getElementById('levBtn').classList.remove('selected');
+            calculateChange();
+        });
+        document.getElementById('levBtn').addEventListener('click', function() {
+            givenCurrency = 'LEV';
+            this.classList.add('selected');
+            document.getElementById('paid').classList.remove('eur');
+            document.getElementById('eurBtn').classList.remove('selected');
+            calculateChange();
+        });
+
+        function calculateChange() {
+            if (orderEuro.value != parseFloat(orderEuro.value)
+             || orderLeva.value != parseFloat(orderLeva.value)) {
+                changeLeva.textContent = '0.00';
+                changeEuro.textContent = '0.00';
+                changeLeva.classList.remove('negative');
+                changeEuro.classList.remove('negative');
+                return;
+            }
+            let orderE = parseFloat(orderEuro.value) || 0;
+            let orderL = parseFloat(orderLeva.value) || 0;
+            let given = parseFloat(amountGiven.value) || 0;
+            let changeL = 0, changeE = 0;
+            if (givenCurrency === 'LEV') {
+                changeL = given - orderL;
+                changeE = changeL / rate;
+            } else {
+                changeE = given - orderE;
+                changeL = changeE * rate;
+            }
+            if(isNaN(changeE)) changeE = 0;
+            if(isNaN(changeL)) changeL = 0;
+            if (changeL < 0) changeLeva.classList.add('negative');
+            else changeLeva.classList.remove('negative');   
+            if (changeE < 0) changeEuro.classList.add('negative');
+            else changeEuro.classList.remove('negative');
+            changeLeva.textContent = changeL.toFixed(2);
+            changeEuro.textContent = changeE.toFixed(2);
+        }
+        var delInterval;
+        // Calculator button logic
+        document.querySelectorAll('.calc-buttons button').forEach(btn => {
+            btn.addEventListener('touchstart', (e) => {
+                const op = btn.getAttribute('data-op');
+                btn.classList.add('active');
+                if (op==='del'){ // this detects long press for delete whole field
+                    delInterval = window.setInterval(() => {
+                        selectedInput.value = '';
+                        selectedInput.dispatchEvent(new Event('input'));
+                        calculateChange();
+                        e.preventDefault();
+                    }, 600);
+                }
+            });
+            btn.addEventListener('touchend', () => {
+                btn.classList.remove('active');
+                clearInterval(delInterval);
+            });
+
+            btn.addEventListener('click', () => {
+                const op = btn.getAttribute('data-op');
+                if (!selectedInput) return;
+                if (op >= '0' && op <= '9' || op === '.') {
+                    // If decimal is pressed and input is empty, add '0.'
+                    if (op === '.' && selectedInput.value === '') {
+                        selectedInput.value = '0.';
+                        return;
+                    }
+                    // If decimal is pressed right after an operator, add '0.' after the operator
+                    if (op === '.') {
+                        const match = selectedInput.value.match(/([+\-*/])$/);
+                        if (match) {
+                            selectedInput.value += '0.';
+                            return;
+                        }
+                    }
+                    // Allow only one decimal point per number (before and after operator)
+                    if (op === '.') {
+                        if (!/([+\-*/])/.test(selectedInput.value)) {
+                            // No operator: allow only one decimal
+                            if (selectedInput.value.includes('.')) return;
+                        } else {
+                            // Operator exists: check both sides
+                            const parts = selectedInput.value.split(/([+\-*/])/);
+                            // parts[0] is first number, parts[2] is second number (if any)
+                            if (
+                                (!parts[2] && parts[0].includes('.')) || // typing after operator, but no second number yet
+                                (parts[2] && parts[2].includes('.'))     // second number already has decimal
+                            ) return;
+                        }
+                    }
+                    if (selectedInput.value === '0') selectedInput.value = '';
+                    selectedInput.value += op;
+                } else if (['+', '-', '*', '/'].includes(op)) {
+                    // If there's already an operator, do nothing
+                    if (/([+\-*/]$)/.test(selectedInput.value)) {
+                        selectedInput.value = selectedInput.value.slice(0, -1) + op;
+                        return;
+                    }
+                    if (/([+\-*/][\d.]+)/.test(selectedInput.value)) {
+                        // Perform the previous operation first
+                        let parts = selectedInput.value.split(/([+\-*/])/);
+                        let first = parseFloat(parts[0]) || 0;
+                        let operator = parts[1];
+                        let second = parseFloat(parts[2]) || 0;
+                        let result = 0;
+                        switch (operator) {
+                            case '+': result = first + second; break;
+                            case '-': result = first - second; break;
+                            case '*': result = first * second; break;
+                            case '/': result = second !== 0 ? first / second : 0; break;
+                        }
+                        selectedInput.value = result.toFixed(2);
+                    }
+                    lastValue = parseFloat(selectedInput.value) || 0;
+                    lastOp = op;
+                    selectedInput.value += op;
+                }
+                if (op === '=') {
+                    if (lastOp && lastValue !== null) {
+                        // Extract the second operand after the operator
+                        let parts = selectedInput.value.split(lastOp);
+                        let current = parts.length > 1 ? parseFloat(parts[1]) || 0 : 0;
+                        let result = 0;
+                        switch (lastOp) {
+                            case '+': result = lastValue + current; break;
+                            case '-': result = lastValue - current; break;
+                            case '*': result = lastValue * current; break;
+                            case '/': result = current !== 0 ? lastValue / current : 0; break;
+                        }
+                        selectedInput.value = result.toFixed(2);
+                        lastOp = null;
+                        lastValue = null;
+                    }
+                } else if (op === 'del') {
+                    selectedInput.value = selectedInput.value.slice(0, -1);
+                } else if (op === 'clear') {
+                    [orderEuro, orderLeva, amountGiven].forEach(input => {
+                        input.value = '';
+                     });
+                }
+                selectedInput.dispatchEvent(new Event('input'));
+            });
+        });
+        document.addEventListener('selectstart', (e) => {
+            if (e.target.tagName !== 'INPUT'){
+                e.preventDefault();
+            }
+        });
+        if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js');
+        }
+
+    </script>
+</body>
+</html>
