@@ -1,4 +1,4 @@
-![screenshot](https://github.com/user-attachments/assets/f8b786b9-766b-41ca-ae78-a668263e4976)**🇧🇬 Описание**
+**🇧🇬 Описание**
 
 Малко JS приложение, което изчислява рестото в периода на паралелно използване на лева и еврото в България при преминаването към единната валута.
 Може да се инсталира като самостоятелно приложение на Android (PWA) или да се използва директно през уеб браузър. Работи и в офлайн режим.
@@ -18,5 +18,7 @@ The app accepts a purchase price in leva (converted to euros) or in euros (conve
 
 
 This tool is useful in cases where the merchant cannot provide change in euros and must return it entirely in leva.
+
+
 
 ![screenshot_400x646](https://github.com/user-attachments/assets/e38c2d64-897d-470c-a513-80bb0eeb4d98)
