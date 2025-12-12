@@ -21,7 +21,5 @@ The app accepts a purchase price in leva (converted to euros) or in euros (conve
 This tool is useful in cases where the merchant cannot provide change in euros and must return it entirely in leva.
 
 
-
-![screenshot_400x646](https://github.com/user-attachments/assets/e38c2d64-897d-470c-a513-80bb0eeb4d98)
-
 <img width="425" height="641" alt="image" src="https://github.com/user-attachments/assets/81826f1f-5bab-49cc-b52d-f80728c28c2c" />
+
